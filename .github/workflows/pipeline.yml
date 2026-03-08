@@ -56,17 +56,27 @@ jobs:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/php-demo-secure:latest
     
+
+
     # ÉTAPE 3.3 : DAST avec OWASP ZAP (après déploiement)
     - name: Scan DAST avec OWASP ZAP
       if: success()
       run: |
+        # Créer un dossier pour les rapports
+        mkdir -p zap_reports
+
         # Lancer l'application en local
-        docker run -d -p 8080:80 ${{ secrets.DOCKER_USERNAME }}/php-demo-secure:latest
-        
+        docker run -d --name php-app -p 8080:80 ${{ secrets.DOCKER_USERNAME }}/php-demo-secure:latest
+
         # Attendre que l'app démarre
-        sleep 10
-        
-        # Lancer ZAP pour scanner
-        docker run --network="host" -t ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py \
+        sleep 15
+
+        # Lancer ZAP pour scanner avec le dossier monté
+        docker run --network="host" -v $PWD/zap_reports:/zap/wrk -t ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py \
           -t http://localhost:8080 \
-          -r zap_report.html
+          -r zap_report.html \
+          -x zap_report.xml \
+          --hook=/zap/wrk/zap_hook.py || true
+
+        # Vérifier les rapports
+        ls -la zap_reports
