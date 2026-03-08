@@ -27,7 +27,10 @@ jobs:
           -Dsonar.php.version=7.4
 
     # ÉTAPE 3.2 : Scan des dépendances avec Snyk
-    - name: Scan SCA avec Snyk
+    - name: Install dependencies
+      run: composer install
+
+    - name: Snyk Security Scan
       uses: snyk/actions/php@master
       env:
         SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
