@@ -1,23 +1,69 @@
-name: DevSecOps PHP Pipeline
+name: DevSecOps Pipeline PHP
 
 on:
   push:
+    branches: [ main, develop ]
+  pull_request:
     branches: [ main ]
 
 jobs:
-  build:
-
+  security-checks:
     runs-on: ubuntu-latest
-
+    
     steps:
-
-    - name: Checkout code
+    - name: Checkout du code
       uses: actions/checkout@v3
 
-    - name: Installer PHP
-      uses: shivammathur/setup-php@v2
+    # ÉTAPE 3.1 : Scan SAST avec SonarCloud
+    - name: Scan SAST avec SonarCloud
+      uses: SonarSource/sonarcloud-github-action@master
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
       with:
-        php-version: '8.1'
+        args: >
+          -Dsonar.organization=abdelhakim97
+          -Dsonar.projectKey=abdelhakim97_Simulation_DevSecOps
+          -Dsonar.php.version=7.4
 
-    - name: Vérifier syntaxe PHP
-      run: php -l index.php
+    # ÉTAPE 3.2 : Scan des dépendances avec Snyk
+    - name: Scan SCA avec Snyk
+      uses: snyk/actions/php@master
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+
+    # ÉTAPE 4 : Blocage conditionnel
+    # Si Snyk détecte des vulnérabilités critiques, le pipeline échoue ici
+    
+    # ÉTAPE 5 : Déploiement Docker (si OK)
+    - name: Connexion à Docker Hub
+      if: success()  # Ne s'exécute que si les étapes précédentes sont OK
+      uses: docker/login-action@v2
+      with:
+        username: ${{ secrets.DOCKER_USERNAME }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+    
+    - name: Build et push de l'image Docker
+      if: success()
+      uses: docker/build-push-action@v4
+      with:
+        context: .
+        push: true
+        tags: ${{ secrets.DOCKER_USERNAME }}/php-demo-secure:latest
+    
+    # ÉTAPE 3.3 : DAST avec OWASP ZAP (après déploiement)
+    - name: Scan DAST avec OWASP ZAP
+      if: success()
+      run: |
+        # Lancer l'application en local
+        docker run -d -p 8080:80 ${{ secrets.DOCKER_USERNAME }}/php-demo-secure:latest
+        
+        # Attendre que l'app démarre
+        sleep 10
+        
+        # Lancer ZAP pour scanner
+        docker run --network="host" -t ghcr.io/zaproxy/zaproxy:stable zap-full-scan.py \
+          -t http://localhost:8080 \
+          -r zap_report.html
