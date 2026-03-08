@@ -2,8 +2,8 @@
     "name": "devsecops/php-demo",
     "description": "Application PHP Demo pour DevSecOps",
     "require": {
-        "php": ">=7.0.0",
-        "monolog/monolog": "1.0.0",
-        "guzzlehttp/guzzle": "5.0.0"
+        "php": ">=7.4.0",
+        "monolog/monolog": "^2.0",
+        "guzzlehttp/guzzle": "^7.0"
     }
 }
