@@ -18,6 +18,7 @@
     
     <?php
     // Ceci est une mauvaise pratique : informations de connexion en dur
+
     $db_password = "SuperSecretPassword123!";
     ?>
 </body>
