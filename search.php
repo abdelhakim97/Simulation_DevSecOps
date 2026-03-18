@@ -1,6 +1,6 @@
 <?php
 // Connexion à la base de données (volontairement simple pour la démo)
-$conn = mysqli_connect("db", "root", "rootpassword", "testdb");
+$conn = mysqli_connect("localhost", "root", "123456789", "DbSecOps");
 
 // VULNÉRABILITÉ : Injection SQL
 $search = $_GET['search'];

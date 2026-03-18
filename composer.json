@@ -2,15 +2,12 @@
     "name": "devsecops/php-demo",
     "description": "Application PHP Demo pour DevSecOps",
     "require": {
-        "php": ">=7.4",
-        "monolog/monolog": "1.25.0",
-        "symfony/http-foundation": "2.7.0"
-    },
-    "config": {
-        "audit": {
-            "block-insecure": false
-        }
+        "php": ">=7.4.0",
+        "monolog/monolog": "^2.0",
+        "guzzlehttp/guzzle": "^7.0"
     }
+
+
 }
 
 
