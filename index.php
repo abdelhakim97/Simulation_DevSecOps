@@ -12,9 +12,7 @@
         <button type="submit">Rechercher</button>
     </form>
     
-    <p>
-        <a href="info.php">Info PHP</a>
-    </p>
+
     
     <?php
     // Ceci est une mauvaise pratique : informations de connexion en dur
